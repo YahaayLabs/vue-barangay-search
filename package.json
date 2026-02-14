@@ -12,7 +12,8 @@
     ".": {
       "import": "./dist/vue-barangay-search.js",
       "require": "./dist/vue-barangay-search.umd.cjs"
-    }
+    },
+    "./dist/style.css": "./dist/vue-barangay-search.css"
   },
   "scripts": {
     "dev": "vite",
