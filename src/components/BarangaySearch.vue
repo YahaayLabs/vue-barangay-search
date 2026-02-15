@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import { useDebounceFn } from '@vueuse/core'
+import { GisPh } from 'gis.ph-sdk'
+import type { Barangay } from 'gis.ph-sdk'
 
 interface Props {
   province?: string
@@ -8,18 +10,17 @@ interface Props {
   placeholder?: string
   modelValue?: any
   accessToken?: string
+  apiKey?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
   placeholder: 'Search for a barangay...',
 })
 
-const API_BASE_URL = 'https://api.gis.ph/v1'
-
 const emit = defineEmits(['update:modelValue', 'select', 'error'])
 
 const searchQuery = ref('')
-const results = ref<any[]>([])
+const results = ref<Barangay[]>([])
 const isLoading = ref(false)
 const showDropdown = ref(false)
 const error = ref<string | null>(null)
@@ -30,37 +31,17 @@ const debouncedSearch = useDebounceFn(async (query: string) => {
     return
   }
 
-  // Province is no longer strictly required if using global search, 
-  // but we can still respect it if provided, or implementation can change.
-  // For this update, we switched to global search which doesn't require province.
-  
   isLoading.value = true
   error.value = null
 
   try {
-    const url = new URL(`${API_BASE_URL}/barangays/search`)
-    url.searchParams.append('q', query)
-    
-    // If province is provided, we could filter on client or ask API to support it.
-    // The current search endpoint is global.
-    
-    // if (props.province) {
-    //  url.searchParams.append('province', props.province)
-    // }
+    const client = new GisPh({
+      accessToken: props.accessToken,
+      apiKey: props.apiKey
+    })
 
-    const headers: HeadersInit = {}
-    if (props.accessToken) {
-      headers['Authorization'] = `Bearer ${props.accessToken}`
-    }
-
-    const response = await fetch(url.toString(), { headers })
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}))
-      throw new Error(errorData.message || `API Error: ${response.status} ${response.statusText}`)
-    }
-
-    const data = await response.json()
-    results.value = data.data || []
+    const { data } = await client.barangays.search({ q: query })
+    results.value = data || []
     showDropdown.value = true
   } catch (err: any) {
     console.error('Barangay search error:', err)

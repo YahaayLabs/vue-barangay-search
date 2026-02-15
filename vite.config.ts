@@ -8,9 +8,9 @@ export default defineConfig({
         vue(),
         dts({ rollupTypes: true })
     ],
-    // server: {
-    //   open: '/playground/index.html'
-    // },
+    server: {
+        open: '/playground/index.html'
+    },
     build: {
         lib: {
             entry: resolve(__dirname, 'src/index.ts'),

@@ -2,7 +2,6 @@
 
 <p align="center">
   <a href="https://www.npmjs.com/package/vue-barangay-search"><img src="https://img.shields.io/npm/v/vue-barangay-search.svg?style=flat-square" alt="npm version"/></a>
-  <img src="https://img.shields.io/bundlephobia/min/vue-barangay-search?style=flat-square" alt="npm bundle size"/>
   <img src="https://img.shields.io/npm/dw/vue-barangay-search?style=flat-square" alt="npm downloads"/>
   <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"/></a>
 </p>
@@ -17,20 +16,23 @@ A Vue 3 component for searching Philippine Barangays using the [api.gis.ph](http
 -   TypeScript support.
 
 ## API Source
-This component is hardcoded to use the **GIS.PH API** (`https://api.gis.ph/v1`). It cannot be configured to use another backend.
+
+This component uses the official [**gis.ph-sdk**](https://www.npmjs.com/package/gis.ph-sdk) to interact with the [**GIS.PH API**](https://api.gis.ph/v1). It is optimized for Philippine geographical data and ensures type safety and performance.
 
 ## Installation
+
+Install via your preferred package manager:
 
 ```bash
+# Using bun (recommended)
+bun add vue-barangay-search
+
+# Using npm
+npm install vue-barangay-search
+
+# Using pnpm
 pnpm add vue-barangay-search
 ```
-
-## API Key
-
-This component requires an API key for `api.gis.ph`. 
-To request an API key, please visit [gis.ph](https://gis.ph).
-
-## Installation
 
 ## Usage
 
@@ -41,15 +43,15 @@ import { BarangaySearch } from 'vue-barangay-search'
 import 'vue-barangay-search/dist/vue-barangay-search.css'
 
 const selectedBarangay = ref(null)
-const accessToken = 'YOUR_GIS_PH_API_KEY'
+const accessToken = 'YOUR_GIS_PH_API_KEY' // Get one at https://gis.ph
 </script>
 
 <template>
   <BarangaySearch
-    :accessToken="accessToken"
     v-model="selectedBarangay"
-    placeholder="Search barangay..."
-    @select="console.log"
+    :accessToken="accessToken"
+    placeholder="Search for a barangay..."
+    @select="(b) => console.log('Selected:', b)"
   />
 </template>
 ```
@@ -58,30 +60,36 @@ const accessToken = 'YOUR_GIS_PH_API_KEY'
 
 | Prop | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
-| `accessToken` | `String` | `undefined` | **Required**. Your API Key or Token (without "Bearer " prefix). To request an API key, visit [gis.ph](https://gis.ph). |
-| `municipality` | `String` | `undefined` | Optional municipality name to filter by. |
+| `accessToken` | `String` | `undefined` | **Required**. Your API Key or Token from [gis.ph](https://gis.ph). |
+| `municipality` | `String` | `undefined` | Optional: filter results to a specific municipality. |
 | `placeholder` | `String` | `Search for a barangay...` | Input placeholder text. |
 | `modelValue` | `Object` | `undefined` | v-model binding for the selected barangay. |
 
 ## Events
 
--   `update:modelValue`: Emitted when a barangay is selected.
--   `select`: Emitted when a barangay is selected (payload: barangay object).
--   `error`: Emitted when an API error occurs.
+| Event | Payload | Description |
+| :--- | :--- | :--- |
+| `update:modelValue` | `Object` | Emitted when a selection is made. |
+| `select` | `Object` | Emitted with the full barangay object on selection. |
+| `error` | `Error` | Emitted when an API or network error occurs. |
 
 ## Development
 
+This project uses **[Bun](https://bun.sh)** for development.
+
 1.  **Install dependencies**:
     ```bash
-    npm install
+    bun install
     ```
 
 2.  **Run Playground**:
     ```bash
-    npm run dev
+    bun dev
     ```
 
 3.  **Build Library**:
     ```bash
-    npm run build
+    bun run build
     ```
+
+Users can still install this package using `npm`, `pnpm`, or `yarn`. The development choice of Bun does not affect the end-user's installation method.
