@@ -1,6 +1,6 @@
 {
   "name": "vue-barangay-search",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "type": "module",
   "files": [
     "dist"
@@ -13,7 +13,8 @@
       "import": "./dist/vue-barangay-search.js",
       "require": "./dist/vue-barangay-search.umd.cjs"
     },
-    "./dist/style.css": "./dist/vue-barangay-search.css"
+    "./dist/style.css": "./dist/vue-barangay-search.css",
+    "./dist/vue-barangay-search.css": "./dist/vue-barangay-search.css"
   },
   "scripts": {
     "dev": "vite",

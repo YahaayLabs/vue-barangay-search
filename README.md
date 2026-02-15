@@ -1,5 +1,12 @@
 # Vue Barangay Search
 
+<p align="center">
+  <a href="https://www.npmjs.com/package/vue-barangay-search"><img src="https://img.shields.io/npm/v/vue-barangay-search.svg?style=flat-square" alt="npm version"/></a>
+  <img src="https://img.shields.io/bundlephobia/min/vue-barangay-search?style=flat-square" alt="npm bundle size"/>
+  <img src="https://img.shields.io/npm/dw/vue-barangay-search?style=flat-square" alt="npm downloads"/>
+  <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"/></a>
+</p>
+
 A Vue 3 component for searching Philippine Barangays using the [api.gis.ph](https://api.gis.ph) service.
 
 ## Features
