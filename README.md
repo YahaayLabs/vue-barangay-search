@@ -25,7 +25,12 @@ This component is hardcoded to use the **GIS.PH API** (`https://api.gis.ph/v1`).
 pnpm add vue-barangay-search
 ```
 
-(Note: Since this is a local component for now, you can link it or copy the `src` files).
+## API Key
+
+This component requires an API key for `api.gis.ph`. 
+To request an API key, please visit [gis.ph](https://gis.ph).
+
+## Installation
 
 ## Usage
 
@@ -33,15 +38,15 @@ pnpm add vue-barangay-search
 <script setup>
 import { ref } from 'vue'
 import { BarangaySearch } from 'vue-barangay-search'
-import 'vue-barangay-search/dist/vue-barangay-search.css' // Import styles if using the built library
+import 'vue-barangay-search/dist/vue-barangay-search.css'
 
 const selectedBarangay = ref(null)
-const province = ref('Bohol')
+const accessToken = 'YOUR_GIS_PH_API_KEY'
 </script>
 
 <template>
   <BarangaySearch
-    :province="province"
+    :accessToken="accessToken"
     v-model="selectedBarangay"
     placeholder="Search barangay..."
     @select="console.log"
@@ -53,9 +58,8 @@ const province = ref('Bohol')
 
 | Prop | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
-| `province` | `String` | `undefined` | Optional. If omitted, performs a global search. |
+| `accessToken` | `String` | `undefined` | **Required**. Your API Key or Token (without "Bearer " prefix). To request an API key, visit [gis.ph](https://gis.ph). |
 | `municipality` | `String` | `undefined` | Optional municipality name to filter by. |
-| `accessToken` | `String` | `undefined` | Optional API Key or Token (without "Bearer " prefix). Sent in `Authorization` header. |
 | `placeholder` | `String` | `Search for a barangay...` | Input placeholder text. |
 | `modelValue` | `Object` | `undefined` | v-model binding for the selected barangay. |
 
