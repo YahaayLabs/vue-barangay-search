@@ -285,30 +285,30 @@ onClickOutside(rootEl, () => {
 .search-input {
   width: 100%;
   padding: 10px 36px 10px 14px;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  font-size: 1rem;
+  border: 1px solid var(--barangay-search-border, #e2e8f0);
+  border-radius: var(--barangay-search-radius, 8px);
+  font-size: 0.9rem;
   line-height: 1.5;
-  color: #1e293b;
-  background-color: white;
+  color: var(--barangay-search-text, #0f172a);
+  background-color: var(--barangay-search-bg, #fff);
   transition: all 0.2s ease-in-out;
   box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 }
 
 .search-input:focus {
   outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+  border-color: var(--barangay-search-focus, #10b981);
+  box-shadow: 0 0 0 3px var(--barangay-search-focus-ring, rgba(16, 185, 129, 0.15));
 }
 
 .search-input.is-selected {
-  border-color: #86efac;
-  background-color: #f0fdf4;
+  border-color: var(--barangay-search-selected-border, #a7f3d0);
+  background-color: var(--barangay-search-selected-bg, #ecfdf5);
 }
 
 .search-input.is-selected:focus {
-  border-color: #22c55e;
-  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.15);
+  border-color: var(--barangay-search-check, #059669);
+  box-shadow: 0 0 0 3px var(--barangay-search-focus-ring, rgba(16, 185, 129, 0.15));
 }
 
 .search-input::placeholder {
@@ -324,11 +324,11 @@ onClickOutside(rootEl, () => {
 }
 
 .loader {
-  color: #64748b;
+  color: var(--barangay-search-muted, #64748b);
 }
 
 .selected-check {
-  color: #16a34a;
+  color: var(--barangay-search-check, #059669);
   font-weight: 700;
 }
 
@@ -391,7 +391,7 @@ onClickOutside(rootEl, () => {
 }
 
 .error-message {
-  color: #ef4444;
+  color: var(--barangay-search-error, #dc2626);
   font-size: 0.875rem;
   margin-top: 6px;
 }

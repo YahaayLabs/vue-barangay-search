@@ -130,8 +130,6 @@ bun dev
 | **Dashboard** | [dashboard.gis.ph](https://dashboard.gis.ph) |
 | **JS SDK** | [gis.ph-sdk](https://www.npmjs.com/package/gis.ph-sdk) |
 | **Laravel sibling** | [laravel-barangay-search](https://github.com/YahaayLabs/laravel-barangay-search) |
-| **Product notes** | [docs/PRD.md](./docs/PRD.md) |
-
 ## Development
 
 ```bash
