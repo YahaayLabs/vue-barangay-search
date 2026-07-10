@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
-import { useDebounceFn } from '@vueuse/core'
+import { computed, nextTick, onMounted, ref, watch } from 'vue'
+import { onClickOutside, useDebounceFn } from '@vueuse/core'
 import { GisPh } from 'gis.ph-sdk'
 import type { Barangay } from 'gis.ph-sdk'
 
@@ -8,98 +8,258 @@ interface Props {
   province?: string
   municipality?: string
   placeholder?: string
-  modelValue?: any
+  modelValue?: Barangay | null
   accessToken?: string
   apiKey?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  placeholder: 'Search for a barangay...',
+  placeholder: 'Search barangay, city, or province…',
 })
 
-const emit = defineEmits(['update:modelValue', 'select', 'error'])
+const emit = defineEmits<{
+  'update:modelValue': [value: Barangay | null]
+  select: [value: Barangay]
+  error: [message: string]
+}>()
+
+const rootEl = ref<HTMLElement | null>(null)
+const inputEl = ref<HTMLInputElement | null>(null)
 
 const searchQuery = ref('')
 const results = ref<Barangay[]>([])
 const isLoading = ref(false)
 const showDropdown = ref(false)
 const error = ref<string | null>(null)
+/** When true, ignore the next searchQuery watch (programmatic label after select). */
+const suppressSearch = ref(false)
+/** True after a pick until the user edits the input. */
+const isCommitted = ref(false)
+/** Ignore stale responses from earlier keystrokes. */
+let searchSeq = 0
 
-const debouncedSearch = useDebounceFn(async (query: string) => {
-  if (!query || query.length < 2) {
+function labelFor(item: Barangay | null | undefined): string {
+  if (!item) return ''
+  return String(item.name ?? '')
+}
+
+function applyExternalValue(value: Barangay | null | undefined) {
+  if (!value) {
+    if (isCommitted.value) {
+      suppressSearch.value = true
+      searchQuery.value = ''
+      isCommitted.value = false
+    }
     results.value = []
+    showDropdown.value = false
+    return
+  }
+  suppressSearch.value = true
+  searchQuery.value = labelFor(value)
+  isCommitted.value = true
+  results.value = []
+  showDropdown.value = false
+  error.value = null
+}
+
+onMounted(() => {
+  if (props.modelValue) applyExternalValue(props.modelValue)
+})
+
+watch(
+  () => props.modelValue,
+  (value) => {
+    // Keep input in sync when parent sets/clears v-model
+    if (!value) {
+      if (isCommitted.value || searchQuery.value) applyExternalValue(null)
+      return
+    }
+    if (labelFor(value) !== searchQuery.value || !isCommitted.value) {
+      applyExternalValue(value)
+    }
+  },
+)
+
+const canShowResults = computed(
+  () => showDropdown.value && !isCommitted.value && results.value.length > 0,
+)
+const canShowEmpty = computed(
+  () =>
+    showDropdown.value
+    && !isCommitted.value
+    && !isLoading.value
+    && searchQuery.value.trim().length >= 2
+    && results.value.length === 0
+    && !error.value,
+)
+
+function closeDropdown() {
+  showDropdown.value = false
+}
+
+function openDropdownIfNeeded() {
+  if (isCommitted.value) return
+  if (results.value.length > 0 || (searchQuery.value.trim().length >= 2 && !isLoading.value)) {
+    showDropdown.value = true
+  }
+}
+
+const runSearch = useDebounceFn(async (query: string) => {
+  const trimmed = query.trim()
+  if (!trimmed || trimmed.length < 2 || isCommitted.value) {
+    results.value = []
+    isLoading.value = false
     return
   }
 
+  const seq = ++searchSeq
   isLoading.value = true
   error.value = null
 
   try {
-    const client = new GisPh({
-      accessToken: props.accessToken,
-      apiKey: props.apiKey
-    })
+    // Bearer only — X-API-Key is blocked by api.gis.ph browser CORS.
+    const token = props.accessToken || props.apiKey
+    const client = new GisPh(token ? { accessToken: token } : {})
+    const { data } = await client.barangays.search({ q: trimmed })
 
-    const { data } = await client.barangays.search({ q: query })
+    if (seq !== searchSeq || isCommitted.value) return
+
     results.value = data || []
     showDropdown.value = true
   } catch (err: any) {
+    if (seq !== searchSeq) return
     console.error('Barangay search error:', err)
-    error.value = err.message || 'Failed to fetch barangays'
-    emit('error', error.value)
+    const message =
+      err?.message === 'Failed to fetch'
+        ? 'Network/CORS error talking to api.gis.ph. Check the browser console and that your API key is valid.'
+        : (err.message || 'Failed to fetch barangays')
+    error.value = message
+    emit('error', message)
     results.value = []
   } finally {
-    isLoading.value = false
+    if (seq === searchSeq) isLoading.value = false
   }
 }, 300)
 
 watch(searchQuery, (newQuery) => {
-  debouncedSearch(newQuery)
+  if (suppressSearch.value) {
+    suppressSearch.value = false
+    return
+  }
+
+  // User is editing after a selection — clear v-model and search again
+  if (isCommitted.value) {
+    isCommitted.value = false
+    emit('update:modelValue', null)
+  }
+
+  error.value = null
+  const trimmed = newQuery.trim()
+  if (trimmed.length < 2) {
+    searchSeq++ // invalidate in-flight
+    results.value = []
+    showDropdown.value = false
+    isLoading.value = false
+    return
+  }
+
+  runSearch(newQuery)
 })
 
-const selectItem = (item: any) => {
+function selectItem(item: Barangay) {
+  searchSeq++ // cancel any in-flight search
+  isLoading.value = false
+  isCommitted.value = true
+  suppressSearch.value = true
+  searchQuery.value = labelFor(item)
+  results.value = []
+  showDropdown.value = false
+  error.value = null
   emit('update:modelValue', item)
   emit('select', item)
-  searchQuery.value = item.name // or item.full_name if preferred
-  showDropdown.value = false
+  // Blur so focus doesn't immediately re-open an empty menu
+  nextTick(() => inputEl.value?.blur())
 }
 
-// Close dropdown when clicking outside (rudimentary implementation)
-// In a real lib, use onClickOutside from vueuse
+function onFocus() {
+  openDropdownIfNeeded()
+}
+
+function onKeydown(event: KeyboardEvent) {
+  if (event.key === 'Escape') {
+    event.preventDefault()
+    closeDropdown()
+    inputEl.value?.blur()
+  }
+}
+
+onClickOutside(rootEl, () => {
+  closeDropdown()
+})
 </script>
 
 <template>
-  <div class="barangay-search-container">
+  <div ref="rootEl" class="barangay-search-container">
     <div class="input-wrapper">
       <input
-        type="text"
+        ref="inputEl"
         v-model="searchQuery"
+        type="text"
         :placeholder="placeholder"
         class="search-input"
-        @focus="showDropdown = true"
-      />
-      <div v-if="isLoading" class="loader">Loading...</div>
+        :class="{ 'is-selected': isCommitted }"
+        autocomplete="off"
+        role="combobox"
+        aria-autocomplete="list"
+        :aria-expanded="canShowResults || canShowEmpty"
+        @focus="onFocus"
+        @keydown="onKeydown"
+      >
+      <div v-if="isLoading" class="loader" aria-hidden="true">
+        Searching…
+      </div>
+      <div
+        v-else-if="isCommitted"
+        class="selected-check"
+        title="Selected"
+        aria-hidden="true"
+      >
+        ✓
+      </div>
     </div>
-    
-    <ul v-if="showDropdown && results.length > 0" class="results-dropdown">
-      <li 
-        v-for="item in results" 
-        :key="item.id || item.code" 
-        @click="selectItem(item)"
+
+    <ul
+      v-if="canShowResults"
+      class="results-dropdown"
+      role="listbox"
+    >
+      <li
+        v-for="item in results"
+        :key="item.id || item.code || item.name"
         class="result-item"
+        role="option"
+        @mousedown.prevent="selectItem(item)"
       >
         <span class="barangay-name">{{ item.name }}</span>
         <small class="location-context">
-             {{ item.municipality }}, {{ item.province }}
+          {{ item.municipality || item.city }}{{ (item.municipality || item.city) && item.province ? ', ' : '' }}{{ item.province }}
         </small>
       </li>
     </ul>
-    
-    <div v-if="showDropdown && results.length === 0 && searchQuery.length >= 2 && !isLoading" class="no-results">
-        No results found.
+
+    <div
+      v-if="canShowEmpty"
+      class="no-results"
+    >
+      No results found.
     </div>
-     <div v-if="error" class="error-message">
-        {{ error }}
+
+    <div
+      v-if="error"
+      class="error-message"
+      role="alert"
+    >
+      {{ error }}
     </div>
   </div>
 </template>
@@ -124,7 +284,7 @@ const selectItem = (item: any) => {
 
 .search-input {
   width: 100%;
-  padding: 10px 14px;
+  padding: 10px 36px 10px 14px;
   border: 1px solid #e2e8f0;
   border-radius: 8px;
   font-size: 1rem;
@@ -141,16 +301,35 @@ const selectItem = (item: any) => {
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
 }
 
+.search-input.is-selected {
+  border-color: #86efac;
+  background-color: #f0fdf4;
+}
+
+.search-input.is-selected:focus {
+  border-color: #22c55e;
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.15);
+}
+
 .search-input::placeholder {
   color: #94a3b8;
 }
 
-.loader {
+.loader,
+.selected-check {
   position: absolute;
   right: 12px;
   font-size: 0.875rem;
-  color: #64748b;
   pointer-events: none;
+}
+
+.loader {
+  color: #64748b;
+}
+
+.selected-check {
+  color: #16a34a;
+  font-weight: 700;
 }
 
 .results-dropdown {
@@ -217,7 +396,6 @@ const selectItem = (item: any) => {
   margin-top: 6px;
 }
 
-/* Scrollbar styling */
 .results-dropdown::-webkit-scrollbar {
   width: 6px;
 }

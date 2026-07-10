@@ -1,111 +1,221 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { BarangaySearch } from '../src'
-import { GisPh } from 'gis.ph-sdk'
 
-const selectedBarangay = ref<any>(null)
-const province = ref('Bohol')
-const municipality = ref('')
-const accessToken = ref('')
+/** GIF / README demo — set VITE_GISPH_API_KEY in .env.local for search to work. */
+const apiKey = ref(import.meta.env.VITE_GISPH_API_KEY as string | undefined)
 
-const sdkResult = ref<any>(null)
+const form = ref({
+  fullName: 'Maria Santos',
+  phone: '+63 917 555 0142',
+  street: '123 Mabini Street',
+  barangay: null as Record<string, unknown> | null,
+})
 
-async function testSdk() {
-  const client = new GisPh({
-    accessToken: accessToken.value
-  })
-  try {
-    const response = await client.provinces.list({ limit: 5 })
-    sdkResult.value = response
-  } catch (err) {
-    sdkResult.value = err
-  }
-}
+const selectionLabel = computed(() => {
+  const b = form.value.barangay
+  if (!b) return null
+  return [b.name, b.municipality ?? b.city, b.province].filter(Boolean).join(', ')
+})
 </script>
 
 <template>
-  <div class="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-6 font-sans text-gray-800">
-    <div class="w-full max-w-lg bg-white rounded-xl shadow-lg p-8">
-      <h1 class="text-2xl font-bold text-center text-gray-900 mb-8">Vue Barangay Search</h1>
-      
-      <div class="mb-6 space-y-4">
-        <div class="">
-          <label class="block text-sm font-medium text-gray-700 mb-1">
-            API Access Token <span class="text-xs text-gray-500 font-normal">(Optional)</span>
+  <div class="demo">
+    <div class="card">
+      <header class="card-header">
+        <p class="eyebrow">Checkout</p>
+        <h1>Delivery address</h1>
+      </header>
+
+      <form class="fields" @submit.prevent>
+        <div class="row two">
+          <label class="field">
+            <span>Full name</span>
+            <input v-model="form.fullName" type="text" autocomplete="name">
           </label>
-          <input 
-            v-model="accessToken" 
-            type="password" 
-            placeholder="Bearer token or API Key" 
-            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
-          />
+          <label class="field">
+            <span>Mobile</span>
+            <input v-model="form.phone" type="tel" autocomplete="tel">
+          </label>
         </div>
 
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">
-            Province <span class="text-xs text-gray-500 font-normal">(Optional - Global Search)</span>
-          </label>
-          <input 
-            v-model="province" 
-            type="text" 
-            placeholder="e.g. Bohol" 
-             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
-          />
-        </div>
-        
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">
-            Municipality <span class="text-xs text-gray-500 font-normal">(Optional)</span>
-          </label>
-          <input 
-            v-model="municipality" 
-            type="text" 
-            placeholder="e.g. Tagbilaran" 
-             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
-          />
-        </div>
-      </div>
-
-      <div class="mb-8">
-        <label class="block text-sm font-medium text-gray-700 mb-1">
-            Search Barangay
+        <label class="field">
+          <span>Street</span>
+          <input
+            v-model="form.street"
+            type="text"
+            placeholder="House no., street, subdivision"
+            autocomplete="street-address"
+          >
         </label>
-        <BarangaySearch
-          :province="province"
-          :municipality="municipality"
-          :access-token="accessToken"
-          v-model="selectedBarangay"
-          @select="(item) => console.log('Selected:', item)"
-        />
-        <p class="mt-2 text-xs text-gray-500">Start typing to search across all barangays.</p>
-      </div>
 
-      <div class="bg-blue-50 border border-blue-100 rounded-lg p-4">
-        <h3 class="text-sm font-semibold text-blue-900 mb-2">Selected Object:</h3>
-        <pre class="text-xs text-blue-800 overflow-x-auto whitespace-pre-wrap font-mono">{{ selectedBarangay }}</pre>
-      </div>
-    </div>
-    
-    <footer class="mt-8 text-center text-sm text-gray-400">
-        Demo Playground for GIS.PH Utils
-    </footer>
+        <label class="field field-barangay">
+          <span>Barangay</span>
+          <BarangaySearch
+            v-model="form.barangay"
+            :api-key="apiKey"
+            placeholder="e.g. Poblacion Batangas"
+          />
+        </label>
 
-    <!-- SDK Direct Test Section -->
-    <div class="mt-8 w-full max-w-lg bg-white rounded-xl shadow-lg p-8">
-      <h2 class="text-xl font-bold text-gray-900 mb-4">SDK Direct Test</h2>
-      <button 
-        @click="testSdk"
-        class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition"
-      >
-        Fetch Provinces via SDK
-      </button>
-      <div v-if="sdkResult" class="mt-4 bg-gray-100 p-4 rounded text-xs font-mono overflow-auto max-h-40">
-        {{ sdkResult }}
-      </div>
+        <div
+          v-if="selectionLabel"
+          class="selection"
+        >
+          <span class="selection-dot" />
+          <span>{{ selectionLabel }}</span>
+        </div>
+
+        <button type="submit" class="btn">
+          Continue
+        </button>
+      </form>
     </div>
   </div>
 </template>
 
 <style scoped>
-/* Tailwind handles the styling now */
+.demo {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+  background: #f1f5f9;
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  color: #0f172a;
+  -webkit-font-smoothing: antialiased;
+}
+
+.card {
+  width: 100%;
+  max-width: 28rem;
+  background: #fff;
+  border-radius: 1rem;
+  border: 1px solid #e2e8f0;
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.04),
+    0 12px 32px rgba(15, 23, 42, 0.06);
+  padding: 1.75rem 1.5rem 1.5rem;
+}
+
+.card-header {
+  margin-bottom: 1.5rem;
+}
+
+.eyebrow {
+  margin: 0 0 0.25rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #059669;
+}
+
+.card-header h1 {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #0f172a;
+}
+
+.fields {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.row.two {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.field > span {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #475569;
+}
+
+.field input {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  padding: 0.6rem 0.75rem;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  color: #0f172a;
+  background: #fff;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.field input::placeholder {
+  color: #94a3b8;
+}
+
+.field input:focus {
+  outline: none;
+  border-color: #34d399;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+}
+
+.field-barangay {
+  /* Keep dropdown space in frame when recording GIFs */
+  min-height: 4.5rem;
+}
+
+.selection {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: 0.5rem;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #065f46;
+  line-height: 1.35;
+}
+
+.selection-dot {
+  flex-shrink: 0;
+  width: 0.45rem;
+  height: 0.45rem;
+  margin-top: 0.3rem;
+  border-radius: 999px;
+  background: #10b981;
+}
+
+.btn {
+  margin-top: 0.25rem;
+  width: 100%;
+  border: none;
+  border-radius: 0.5rem;
+  padding: 0.7rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #fff;
+  background: #059669;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.btn:hover {
+  background: #047857;
+}
+
+@media (max-width: 420px) {
+  .row.two {
+    grid-template-columns: 1fr;
+  }
+}
 </style>

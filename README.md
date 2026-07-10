@@ -12,7 +12,7 @@ A Vue 3 component for searching Philippine Barangays using the [api.gis.ph](http
 
 ## Features
 
--   Autocomplete search for barangays.
+-   Autocomplete search for barangays (multi-word free text, e.g. `poblacion bat`).
 -   Debounced API calls.
 -   Scoped styling (easy to override or use as is).
 -   TypeScript support.
@@ -78,6 +78,19 @@ const accessToken = 'YOUR_GIS_PH_API_KEY' // Get one at https://gis.ph
 | `select` | `Object` | Emitted with the full barangay object on selection. |
 | `error` | `Error` | Emitted when an API or network error occurs. |
 
+## Sample / demo page
+
+A clean checkout-style form for local demos and README GIFs:
+
+```bash
+bun install
+cp .env.example .env.local   # set VITE_GISPH_API_KEY=gis_sk_…
+bun dev
+# → /playground/index.html
+```
+
+See [docs/PRD.md](./docs/PRD.md) for product scope and roadmap.
+
 ## Development
 
 This project uses **[Bun](https://bun.sh)** for development.
@@ -87,7 +100,7 @@ This project uses **[Bun](https://bun.sh)** for development.
     bun install
     ```
 
-2.  **Run Playground**:
+2.  **Run sample demo**:
     ```bash
     bun dev
     ```
