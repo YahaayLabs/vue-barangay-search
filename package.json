@@ -1,9 +1,37 @@
 {
   "name": "vue-barangay-search",
   "version": "0.2.0",
+  "description": "Vue 3 autocomplete for Philippine barangays — powered by the GIS.ph API",
   "type": "module",
+  "license": "MIT",
+  "author": "Yahaay Labs <gerald@yahaay.com>",
+  "homepage": "https://gis.ph",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/YahaayLabs/vue-barangay-search.git"
+  },
+  "bugs": {
+    "url": "https://github.com/YahaayLabs/vue-barangay-search/issues"
+  },
+  "keywords": [
+    "vue",
+    "vue3",
+    "barangay",
+    "philippines",
+    "autocomplete",
+    "address",
+    "lgu",
+    "psgc",
+    "gis",
+    "gis.ph",
+    "typescript",
+    "component"
+  ],
   "files": [
-    "dist"
+    "dist",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
   ],
   "main": "./dist/vue-barangay-search.umd.cjs",
   "module": "./dist/vue-barangay-search.js",
@@ -11,7 +39,8 @@
   "exports": {
     ".": {
       "import": "./dist/vue-barangay-search.js",
-      "require": "./dist/vue-barangay-search.umd.cjs"
+      "require": "./dist/vue-barangay-search.umd.cjs",
+      "types": "./dist/index.d.ts"
     },
     "./dist/style.css": "./dist/vue-barangay-search.css",
     "./dist/vue-barangay-search.css": "./dist/vue-barangay-search.css"
@@ -19,7 +48,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
     "vue": "^3.5.0"

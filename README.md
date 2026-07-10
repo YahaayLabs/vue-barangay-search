@@ -4,39 +4,52 @@
   <a href="https://www.npmjs.com/package/vue-barangay-search"><img src="https://img.shields.io/npm/v/vue-barangay-search.svg?style=flat-square" alt="npm version"/></a>
   <img src="https://img.shields.io/npm/dw/vue-barangay-search?style=flat-square" alt="npm downloads"/>
   <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"/></a>
+  <a href="https://gis.ph"><img src="https://img.shields.io/badge/API-gis.ph-10b981?style=flat-square" alt="GIS.ph"/></a>
 </p>
 
-A Vue 3 component for searching Philippine Barangays using the [api.gis.ph](https://api.gis.ph) service.
+**Drop-in Vue 3 barangay search for Philippine address forms.**
 
-<img width="554" height="910" alt="vue-barangay-search-demo1" src="https://github.com/user-attachments/assets/4d68e7fb-1603-4c08-a2b8-d93c95bc1fd7" />
+Type free text like `Poblacion Batangas`, pick a result, and bind a structured place object with `v-model` — powered by the [GIS.ph API](https://api.gis.ph).
+
+<p align="center">
+  <img width="554" alt="vue-barangay-search demo" src="https://github.com/user-attachments/assets/4d68e7fb-1603-4c08-a2b8-d93c95bc1fd7" />
+</p>
+
+Built for **checkout, KYC, registration, and delivery** UIs where users need to select a real barangay — not free-type a misspelled place name.
+
+Part of the [GIS.ph](https://gis.ph) developer platform · also available for [Laravel / Livewire](https://github.com/YahaayLabs/laravel-barangay-search).
+
+---
 
 ## Features
 
--   Autocomplete search for barangays (multi-word free text, e.g. `poblacion bat`).
--   Debounced API calls.
--   Scoped styling (easy to override or use as is).
--   TypeScript support.
+- **Autocomplete** — debounced search against live Philippine barangay data
+- **Natural queries** — multi-word free text (e.g. `san jose laguna`)
+- **v-model ready** — selected barangay object for forms and APIs
+- **Scoped styles** — sensible defaults; override with your CSS
+- **TypeScript** — types from the official `gis.ph-sdk`
+- **Lightweight** — Vue 3 peer dependency; no heavy UI framework required
 
-## API Source
+## Get an API key
 
-This component uses the official [**gis.ph-sdk**](https://www.npmjs.com/package/gis.ph-sdk) to interact with the [**GIS.PH API**](https://api.gis.ph/v1). It is optimized for Philippine geographical data and ensures type safety and performance.
+1. Sign up / request access at [gis.ph](https://gis.ph)
+2. Create an API key in the [dashboard](https://dashboard.gis.ph) (`gis_sk_…`)
+3. Prefer **restricted keys** for browser use (domain / rate limits)
 
 ## Installation
 
-Install via your preferred package manager:
-
 ```bash
-# Using bun (recommended)
+# bun (recommended for local dev)
 bun add vue-barangay-search
 
-# Using npm
+# npm
 npm install vue-barangay-search
 
-# Using pnpm
+# pnpm
 pnpm add vue-barangay-search
 ```
 
-## Usage
+## Quick start
 
 ```vue
 <script setup>
@@ -44,70 +57,91 @@ import { ref } from 'vue'
 import { BarangaySearch } from 'vue-barangay-search'
 import 'vue-barangay-search/dist/vue-barangay-search.css'
 
-const selectedBarangay = ref(null)
-const accessToken = 'YOUR_GIS_PH_API_KEY' // Get one at https://gis.ph
+const barangay = ref(null)
+const apiKey = import.meta.env.VITE_GISPH_API_KEY
 </script>
 
 <template>
   <BarangaySearch
-    v-model="selectedBarangay"
-    :accessToken="accessToken"
-    placeholder="Search for a barangay..."
+    v-model="barangay"
+    :api-key="apiKey"
+    placeholder="e.g. Poblacion Batangas"
     @select="(b) => console.log('Selected:', b)"
+    @error="(msg) => console.error(msg)"
   />
 </template>
 ```
-
-## See in action
-
 
 ## Props
 
 | Prop | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
-| `accessToken` | `String` | `undefined` | **Required**. Your API Key or Token from [gis.ph](https://gis.ph). |
-| `municipality` | `String` | `undefined` | Optional: filter results to a specific municipality. |
-| `placeholder` | `String` | `Search for a barangay...` | Input placeholder text. |
-| `modelValue` | `Object` | `undefined` | v-model binding for the selected barangay. |
+| `apiKey` | `string` | — | GIS.ph API key (`gis_sk_…`). Sent as `Authorization: Bearer`. |
+| `accessToken` | `string` | — | Alternative auth (Bearer token). Used if `apiKey` is not set. |
+| `placeholder` | `string` | `Search barangay, city, or province…` | Input placeholder. |
+| `modelValue` | `object \| null` | — | `v-model` binding for the selected barangay. |
+| `province` | `string` | — | Optional scope (see roadmap / API filters). |
+| `municipality` | `string` | — | Optional scope (see roadmap / API filters). |
+
+> One of `apiKey` or `accessToken` is required for authenticated API access.
 
 ## Events
 
 | Event | Payload | Description |
 | :--- | :--- | :--- |
-| `update:modelValue` | `Object` | Emitted when a selection is made. |
-| `select` | `Object` | Emitted with the full barangay object on selection. |
-| `error` | `Error` | Emitted when an API or network error occurs. |
+| `update:modelValue` | `object \| null` | Selected barangay, or `null` when cleared by editing. |
+| `select` | `object` | Full barangay object on pick. |
+| `error` | `string` | API or network error message. |
 
-## Sample / demo page
+## Selection shape
 
-A clean checkout-style form for local demos and README GIFs:
+Fields depend on the API response (typically):
+
+```json
+{
+  "name": "Poblacion",
+  "municipality": "…",
+  "province": "…",
+  "fullName": "…",
+  "lCode": "…",
+  "pCode": "…"
+}
+```
+
+Use the object as-is in form state, or map to your own DTO.
+
+## Local demo
+
+Checkout-style playground for demos and marketing GIFs:
 
 ```bash
 bun install
-cp .env.example .env.local   # set VITE_GISPH_API_KEY=gis_sk_…
+cp .env.example .env.local   # VITE_GISPH_API_KEY=gis_sk_…
 bun dev
 # → /playground/index.html
 ```
 
-See [docs/PRD.md](./docs/PRD.md) for product scope and roadmap.
+## Links
+
+| | |
+| --- | --- |
+| **Website** | [gis.ph](https://gis.ph) |
+| **API** | [api.gis.ph](https://api.gis.ph) · [docs](https://docs.gis.ph) |
+| **Dashboard** | [dashboard.gis.ph](https://dashboard.gis.ph) |
+| **JS SDK** | [gis.ph-sdk](https://www.npmjs.com/package/gis.ph-sdk) |
+| **Laravel sibling** | [laravel-barangay-search](https://github.com/YahaayLabs/laravel-barangay-search) |
+| **Product notes** | [docs/PRD.md](./docs/PRD.md) |
 
 ## Development
 
-This project uses **[Bun](https://bun.sh)** for development.
+```bash
+bun install
+bun dev          # playground
+bun run build    # library → dist/
+```
 
-1.  **Install dependencies**:
-    ```bash
-    bun install
-    ```
+Install with npm, pnpm, or yarn in consuming apps — Bun is only the package’s preferred local toolchain.
 
-2.  **Run sample demo**:
-    ```bash
-    bun dev
-    ```
+## License
 
-3.  **Build Library**:
-    ```bash
-    bun run build
-    ```
-
-Users can still install this package using `npm`, `pnpm`, or `yarn`. The development choice of Bun does not affect the end-user's installation method.
+[MIT](./LICENSE) © [Yahaay Labs](https://github.com/YahaayLabs)
