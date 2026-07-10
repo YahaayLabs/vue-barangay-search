@@ -8,6 +8,8 @@
 
 A Vue 3 component for searching Philippine Barangays using the [api.gis.ph](https://api.gis.ph) service.
 
+<img width="554" height="910" alt="vue-barangay-search-demo1" src="https://github.com/user-attachments/assets/4d68e7fb-1603-4c08-a2b8-d93c95bc1fd7" />
+
 ## Features
 
 -   Autocomplete search for barangays.
@@ -55,6 +57,9 @@ const accessToken = 'YOUR_GIS_PH_API_KEY' // Get one at https://gis.ph
   />
 </template>
 ```
+
+## See in action
+
 
 ## Props
 
