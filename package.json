@@ -49,6 +49,7 @@
     "dev": "vite",
     "build": "vue-tsc && vite build",
     "preview": "vite preview",
+    "test": "echo \"Error: no test specified\" && exit 0",
     "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
