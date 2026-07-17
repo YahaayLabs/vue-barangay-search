@@ -242,7 +242,13 @@ onClickOutside(rootEl, () => {
       >
         <span class="barangay-name">{{ item.name }}</span>
         <small class="location-context">
-          {{ item.municipality || item.city }}{{ (item.municipality || item.city) && item.province ? ', ' : '' }}{{ item.province }}
+          {{
+            [
+              item.municipality || item.city,
+              item.province,
+              item.region,
+            ].filter(Boolean).join(', ')
+          }}
         </small>
       </li>
     </ul>
