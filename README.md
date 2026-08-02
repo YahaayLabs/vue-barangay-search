@@ -4,12 +4,12 @@
   <a href="https://www.npmjs.com/package/vue-barangay-search"><img src="https://img.shields.io/npm/v/vue-barangay-search.svg?style=flat-square" alt="npm version"/></a>
   <img src="https://img.shields.io/npm/dw/vue-barangay-search?style=flat-square" alt="npm downloads"/>
   <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"/></a>
-  <a href="https://gis.ph"><img src="https://img.shields.io/badge/API-gis.ph-10b981?style=flat-square" alt="GIS.ph"/></a>
+  <a href="https://gis.ph"><img src="https://img.shields.io/badge/API-gis.ph-10b981?style=flat-square" alt="GIS.PH"/></a>
 </p>
 
 **Drop-in Vue 3 barangay search for Philippine address forms.**
 
-Type free text like `Poblacion Batangas`, pick a result, and bind a structured place object with `v-model` — powered by the [GIS.ph API](https://api.gis.ph).
+Type free text like `Poblacion Batangas`, pick a result, and bind a structured place object with `v-model` — powered by the [GIS.PH API](https://api.gis.ph).
 
 <p align="center">
   <img width="554" alt="vue-barangay-search demo" src="https://github.com/user-attachments/assets/4d68e7fb-1603-4c08-a2b8-d93c95bc1fd7" />
@@ -17,7 +17,7 @@ Type free text like `Poblacion Batangas`, pick a result, and bind a structured p
 
 Built for **checkout, KYC, registration, and delivery** UIs where users need to select a real barangay — not free-type a misspelled place name.
 
-Part of the [GIS.ph](https://gis.ph) developer platform · also available for [Laravel / Livewire](https://github.com/YahaayLabs/laravel-barangay-search).
+Part of the [GIS.PH](https://gis.ph) developer platform · also available for [Laravel / Livewire](https://github.com/YahaayLabs/laravel-barangay-search).
 
 ---
 
@@ -76,7 +76,7 @@ const apiKey = import.meta.env.VITE_GISPH_API_KEY
 
 | Prop | Type | Default | Description |
 | :--- | :--- | :--- | :--- |
-| `apiKey` | `string` | — | GIS.ph API key (`gis_sk_…`). Sent as `Authorization: Bearer`. |
+| `apiKey` | `string` | — | GIS.PH API key (`gis_sk_…`). Sent as `Authorization: Bearer`. |
 | `accessToken` | `string` | — | Alternative auth (Bearer token). Used if `apiKey` is not set. |
 | `placeholder` | `string` | `Search barangay, city, or province…` | Input placeholder. |
 | `modelValue` | `object \| null` | — | `v-model` binding for the selected barangay. |

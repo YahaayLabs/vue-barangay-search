@@ -1,7 +1,7 @@
 {
   "name": "vue-barangay-search",
   "version": "0.2.0",
-  "description": "Vue 3 autocomplete for Philippine barangays — powered by the GIS.ph API",
+  "description": "Vue 3 autocomplete for Philippine barangays — powered by the GIS.PH API",
   "type": "module",
   "license": "MIT",
   "author": "Yahaay Labs <gerald@yahaay.com>",
